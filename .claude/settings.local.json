@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Bash(move:*)",
+      "Bash(Copy-Item \"src\\assets\\material-symbols--receipt-long-outline-rounded.svg\" \"public\\favicon.svg\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
