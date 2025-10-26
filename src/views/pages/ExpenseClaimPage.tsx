@@ -1,10 +1,40 @@
 import { Upload, Check, RefreshCw } from 'lucide-react'
+import { useState } from 'react'
+
 import './ExpenseClaimPage.css'
 
 const ExpenseClaimPage = () => {
   const currentStep = 3; // 현재 진행 중인 단계 (1-5)
   const totalSteps = 5;
   const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+
+  const [isCheckingServer, setIsCheckingServer] = useState(false);
+
+  // 서버 체크 API 호출
+  const handleServerCheck = async () => {
+    setIsCheckingServer(true);
+    try {
+      const response = await fetch('/api/serverCheck', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('서버 체크 실패');
+      }
+
+      const data = await response.json();
+      console.log('서버 상태:', data);
+      alert(`서버 응답: ${data.msg}`);
+    } catch (error) {
+      console.error('서버 체크 에러:', error);
+      alert('서버 체크 중 오류가 발생했습니다.');
+    } finally {
+      setIsCheckingServer(false);
+    }
+  };
 
   return (
     <div className="expense-claim-page">
@@ -13,6 +43,13 @@ const ExpenseClaimPage = () => {
         <div className="progress-section">
           <div className="progress-header">
             <h2 className="progress-title">처리 진행상황</h2>
+            <button
+              className="progress-check-button"
+              onClick={handleServerCheck}
+              disabled={isCheckingServer}
+            >
+              {isCheckingServer ? '확인 중...' : 'OCR 서버 상태 확인'}
+            </button>
             <span className="progress-counter">{currentStep} / {totalSteps} 단계</span>
           </div>
           <div className="progress-steps">
