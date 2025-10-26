@@ -1,13 +1,19 @@
+import { Suspense } from 'react';
 import './App.css'
-import CommonLayout from 'views/layouts/CommonLayout'
-import NavigationLayout from 'views/layouts/NavigationLayout'
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+// Layouts
+import CommonLayout from 'views/layout/CommonLayout'
+import Loading from 'views/pages/Loading';
 
 function App() {
   return (
-    <>
-      <NavigationLayout />
-      <CommonLayout />
-    </>
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/*" element={<CommonLayout />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Suspense>
   )
 }
 
