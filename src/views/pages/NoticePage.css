@@ -1,0 +1,148 @@
+.notice-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 1.5rem;
+}
+
+.notice-container {
+  max-width: 80rem;
+  min-width: 1280px;
+  margin: 0 auto;
+}
+
+.notice-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.notice-icon {
+  color: #2563eb;
+}
+
+.notice-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notice-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.notice-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.notice-item.important {
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+
+.notice-item-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.notice-item-text {
+  flex: 1;
+}
+
+.notice-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.notice-badge {
+  padding: 0.25rem 0.5rem;
+  background-color: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+}
+
+.notice-item-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.notice-item-description {
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.notice-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.notice-item-arrow {
+  color: #9ca3af;
+  transition: color 0.2s;
+}
+
+.notice-item:hover .notice-item-arrow {
+  color: #4b5563;
+}
+
+.notice-arrow-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination-button {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination-button:hover {
+  background-color: #f9fafb;
+}
+
+.pagination-button.active {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}

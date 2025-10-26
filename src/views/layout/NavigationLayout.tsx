@@ -1,19 +1,36 @@
+import { FileText } from 'lucide-react'
+import { NavLink } from 'react-router-dom'
+import './NavigationLayout.css'
+
 const NavigationLayout = () => {
     return (
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+        <header className="navigation-header">
+                <div className="navigation-container">
+                  <div className="navigation-logo">
+                    <div className="navigation-logo-icon">
                       <FileText className="w-5 h-5 text-white" />
                     </div>
-                    <h1 className="text-xl font-semibold text-gray-900">스마트 경비관리</h1>
+                    <h1 className="navigation-logo-title">스마트 경비관리</h1>
                   </div>
-                  <nav className="flex gap-8">
-                    <a href="#" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-4">경비청구서 작성</a>
-                    <a href="#" className="text-gray-600 hover:text-gray-900">가이드</a>
-                    <a href="#" className="text-gray-600 hover:text-gray-900">개인정보 기입</a>
-                    <a href="#" className="text-gray-600 hover:text-gray-900">게시판</a>
-                    <a href="#" className="text-gray-600 hover:text-gray-900">공지사항</a>
+                  <nav className="navigation-menu">
+                    <NavLink
+                      to="/expense-claim"
+                      className={({ isActive }) => `navigation-link ${isActive ? 'active' : ''}`}
+                    >
+                      경비청구서 작성
+                    </NavLink>
+                    <NavLink
+                      to="/personal-info"
+                      className={({ isActive }) => `navigation-link ${isActive ? 'active' : ''}`}
+                    >
+                      개인정보 입력
+                    </NavLink>
+                    <NavLink
+                      to="/notice"
+                      className={({ isActive }) => `navigation-link ${isActive ? 'active' : ''}`}
+                    >
+                      공지사항
+                    </NavLink>
                   </nav>
                 </div>
               </header>
