@@ -1,13 +1,20 @@
 .expense-claim-page {
   min-height: 100vh;
   background-color: #f9fafb;
-  padding: 1.5rem;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
 }
 
 .expense-claim-container {
-  max-width: 80rem;
-  min-width: 1280px;
-  margin: 0 auto;
+  width: 1280px;
+  max-width: 1280px;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
 }
 
 /* 진행 상황 */
@@ -17,6 +24,8 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   padding: 1.5rem 2rem;
   margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .progress-header {
@@ -123,6 +132,8 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 영수 상세 내용 */
@@ -131,6 +142,8 @@
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section-title {
@@ -212,6 +225,8 @@
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .upload-area {
@@ -269,6 +284,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card {
@@ -276,6 +293,8 @@
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card-content {

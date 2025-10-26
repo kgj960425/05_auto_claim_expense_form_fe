@@ -1,13 +1,20 @@
 .personal-info-page {
   min-height: 100vh;
   background-color: #f9fafb;
-  padding: 1.5rem;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
 }
 
 .personal-info-container {
-  max-width: 80rem;
-  min-width: 1280px;
-  margin: 0 auto;
+  width: 1280px;
+  max-width: 1280px;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
 }
 
 .personal-info-card {
@@ -15,6 +22,8 @@
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-title {
@@ -31,8 +40,7 @@
 }
 
 .form-section {
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .section-title {
@@ -42,23 +50,44 @@
   margin-bottom: 1rem;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+/* 테이블 스타일 */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
+.info-table td {
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
 }
 
-.form-label {
-  display: block;
-  font-size: 0.875rem;
+.table-header {
+  background-color: #f9fafb;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111827;
+  text-align: center;
+  vertical-align: middle;
+  width: 120px;
+}
+
+.table-label {
+  background-color: #f9fafb;
   font-weight: 500;
+  font-size: 0.875rem;
   color: #374151;
-  margin-bottom: 0.5rem;
+  width: 100px;
+  text-align: center;
+}
+
+.table-input {
+  background-color: white;
+  padding: 0.75rem 1rem;
+}
+
+.table-input .form-input {
+  margin: 0;
 }
 
 .form-input,
@@ -124,4 +153,60 @@
 
 .button-submit:hover {
   background-color: #1d4ed8;
+}
+
+/* 카드 번호 */
+.card-numbers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-number-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.card-number-item .form-input {
+  flex: 1;
+}
+
+.remove-card-button {
+  padding: 0.5rem;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.remove-card-button:hover {
+  background-color: #fecaca;
+}
+
+.add-card-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px dashed #93c5fd;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.add-card-button:hover {
+  background-color: #dbeafe;
+  border-color: #60a5fa;
 }
