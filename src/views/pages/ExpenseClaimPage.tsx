@@ -1,5 +1,5 @@
 import { Upload, Check, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 import './ExpenseClaimPage.css'
 
@@ -9,12 +9,16 @@ const ExpenseClaimPage = () => {
   const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
 
   const [isCheckingServer, setIsCheckingServer] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [receipts, setReceipts] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 서버 체크 API 호출
   const handleServerCheck = async () => {
     setIsCheckingServer(true);
     try {
-      const response = await fetch('/api/serverCheck', {
+      const response = await fetch('/serverCheck', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -34,6 +38,92 @@ const ExpenseClaimPage = () => {
     } finally {
       setIsCheckingServer(false);
     }
+  };
+
+  // 파일 선택 핸들러
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+
+    // 각 파일 검증
+    for (const file of fileArray) {
+      // PDF 파일 검증
+      if (file.type !== 'application/pdf') {
+        alert(`${file.name}은(는) PDF 파일이 아닙니다.`);
+        continue;
+      }
+      // 파일 크기 검증 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name}의 크기가 10MB를 초과합니다.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(validFiles);
+      handleFileUpload(validFiles);
+    }
+  };
+
+  // 파일 업로드 API 호출
+  const handleFileUpload = async (files: File[]) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+
+      // 여러 파일을 files 필드에 추가
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      console.log('업로드 요청:', {
+        filesCount: files.length,
+        fileNames: files.map(f => f.name),
+      });
+
+      // Vite 프록시를 통해 /ocr 경로로 요청
+      const response = await fetch('/ocr/upload?user_id=tester', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('응답 상태:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('에러 응답:', errorText);
+        throw new Error(`파일 업로드 실패: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('업로드 응답:', data);
+
+      // 영수증 데이터 저장
+      if (data.receipts && Array.isArray(data.receipts)) {
+        setReceipts(data.receipts);
+      }
+
+      alert(`${files.length}개의 파일 업로드가 완료되었습니다!\n${data.receipts?.length || 0}개의 영수증이 처리되었습니다.`);
+    } catch (error) {
+      console.error('파일 업로드 에러:', error);
+      alert('파일 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsUploading(false);
+      setSelectedFiles([]);
+      // input 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 파일 선택 버튼 클릭 핸들러
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -100,41 +190,44 @@ const ExpenseClaimPage = () => {
                 <thead>
                   <tr>
                     <th>날짜</th>
-                    <th>항목</th>
+                    <th>가맹점명</th>
                     <th>금액</th>
-                    <th>분류</th>
+                    <th>카드번호</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>2024-01-15</td>
-                    <td>택시요금</td>
-                    <td>15,000원</td>
-                    <td className="category-text">교통비</td>
-                  </tr>
-                  <tr>
-                    <td>2024-01-15</td>
-                    <td>점심식사</td>
-                    <td>12,000원</td>
-                    <td className="category-text blue">식비</td>
-                  </tr>
-                  <tr>
-                    <td>2024-01-16</td>
-                    <td>사무용품</td>
-                    <td>25,000원</td>
-                    <td className="category-text red">사무비</td>
-                  </tr>
+                  {receipts.length > 0 ? (
+                    receipts.map((receipt, index) => (
+                      <tr key={index}>
+                        <td>{receipt.transaction_date}</td>
+                        <td>{receipt.merchant_name}</td>
+                        <td>{receipt.total_amount}원</td>
+                        <td>{receipt.card_number}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                        파일을 업로드하면 영수증 정보가 표시됩니다.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
             <div className="summary-section">
               <div className="summary-row">
                 <span className="summary-label">총 건수:</span>
-                <span className="summary-value">3건</span>
+                <span className="summary-value">{receipts.length}건</span>
               </div>
               <div className="summary-row">
                 <span className="summary-label">총 금액:</span>
-                <span className="summary-total">52,000원</span>
+                <span className="summary-total">
+                  {receipts.reduce((sum, receipt) => {
+                    const amount = parseInt(receipt.total_amount.replace(/,/g, '')) || 0;
+                    return sum + amount;
+                  }, 0).toLocaleString()}원
+                </span>
               </div>
             </div>
           </div>
@@ -149,10 +242,22 @@ const ExpenseClaimPage = () => {
                 </div>
                 <p className="upload-text">영수증을 드래그하여 업로드하거나</p>
                 <p className="upload-text">클릭하여 파일을 선택하세요</p>
-                <button className="upload-button">
-                  파일 선택
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  className="upload-button"
+                  onClick={handleButtonClick}
+                  disabled={isUploading}
+                >
+                  {isUploading ? '업로드 중...' : '파일 선택'}
                 </button>
-                <p className="upload-hint">지원 형식: JPG, PNG, PDF (최대 10MB)</p>
+                <p className="upload-hint">지원 형식: PDF (최대 10MB)</p>
               </div>
             </div>
           </div>

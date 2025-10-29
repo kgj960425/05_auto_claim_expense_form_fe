@@ -1,24 +1,30 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { env } from 'process'
+import dotenv from 'dotenv'
 
-// https://vite.dev/config/
+dotenv.config()
+console.log('VITE_EXPENSE_CLAIM_FORM_URL:', process.env.VITE_EXPENSE_CLAIM_FORM_URL);
+const apiTarget = process.env.VITE_EXPENSE_CLAIM_FORM_URL
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'views': path.resolve(__dirname, './src/views'),
-      'components': path.resolve(__dirname, './src/components'),
-      'assets': path.resolve(__dirname, './src/assets'),
+      views: path.resolve(__dirname, './src/views'),
+      components: path.resolve(__dirname, './src/components'),
+      assets: path.resolve(__dirname, './src/assets'),
     },
   },
   server: {
     proxy: {
-      '/api': {
-        target: env.VITE_CLOUDTYPE_URL,
+      '/ocr': {
+        target: apiTarget,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/serverCheck': {
+        target: apiTarget,
+        changeOrigin: true,
       },
     },
   },
