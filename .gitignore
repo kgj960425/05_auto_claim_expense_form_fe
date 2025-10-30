@@ -23,4 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 .env
-.setting.local.json
+setting.local.json
+.claude/*
