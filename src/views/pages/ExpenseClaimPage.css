@@ -154,6 +154,9 @@
 
 .receipt-table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  max-height: 800px;
 }
 
 .receipt-table {
@@ -174,11 +177,32 @@
 
 .receipt-table tbody tr {
   border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.receipt-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.receipt-table tbody tr.selected {
+  background-color: #dbeafe;
 }
 
 .receipt-table td {
   padding: 0.75rem 0;
   font-size: 0.875rem;
+  position: relative;
+}
+
+.cell-input {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: 2px solid #3b82f6;
+  border-radius: 0.25rem;
+  outline: none;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .category-text {
@@ -224,16 +248,23 @@
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .upload-area {
   border: 2px dashed #d1d5db;
   border-radius: 0.5rem;
-  padding: 3rem;
+  padding: 0;
   text-align: center;
+  aspect-ratio: 1 / 1.65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .upload-content {

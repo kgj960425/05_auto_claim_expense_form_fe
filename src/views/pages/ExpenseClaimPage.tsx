@@ -1,44 +1,19 @@
-import { Upload, Check, RefreshCw } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { useState, useRef } from 'react'
 
 import './ExpenseClaimPage.css'
 
 const ExpenseClaimPage = () => {
-  const currentStep = 3; // 현재 진행 중인 단계 (1-5)
-  const totalSteps = 5;
-  const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-
-  const [isCheckingServer, setIsCheckingServer] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [receipts, setReceipts] = useState<any[]>([]);
+  const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [outputFolder, setOutputFolder] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 서버 체크 API 호출
-  const handleServerCheck = async () => {
-    setIsCheckingServer(true);
-    try {
-      const response = await fetch('/serverCheck', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('서버 체크 실패');
-      }
-
-      const data = await response.json();
-      console.log('서버 상태:', data);
-      alert(`서버 응답: ${data.msg}`);
-    } catch (error) {
-      console.error('서버 체크 에러:', error);
-      alert('서버 체크 중 오류가 발생했습니다.');
-    } finally {
-      setIsCheckingServer(false);
-    }
-  };
+  // 셀 편집 상태 관리
+  const [editingCell, setEditingCell] = useState<{ rowIndex: number; field: string } | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
 
   // 파일 선택 핸들러
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,6 +80,15 @@ const ExpenseClaimPage = () => {
       // 영수증 데이터 저장
       if (data.receipts && Array.isArray(data.receipts)) {
         setReceipts(data.receipts);
+        // 첫 번째 영수증을 기본으로 선택
+        if (data.receipts.length > 0) {
+          setSelectedReceipt(data.receipts[0]);
+        }
+      }
+
+      // output_folder 저장
+      if (data.output_folder) {
+        setOutputFolder(data.output_folder);
       }
 
       alert(`${files.length}개의 파일 업로드가 완료되었습니다!\n${data.receipts?.length || 0}개의 영수증이 처리되었습니다.`);
@@ -126,60 +110,60 @@ const ExpenseClaimPage = () => {
     fileInputRef.current?.click();
   };
 
+  // 영수증 row 클릭 핸들러
+  const handleReceiptClick = (receipt: any) => {
+    setSelectedReceipt(receipt);
+  };
+
+  // 영수증 이미지 URL 생성
+  const getReceiptImageUrl = (receipt: any) => {
+    if (!receipt || !receipt.filename || !outputFolder) return null;
+
+    // output_folder에서 user_id와 timestamp 부분만 추출
+    // 예: "static/temp/tester_20251030030748_c02fb65b/ocr" -> "tester_20251030030748_c02fb65b/ocr"
+    const folderPath = outputFolder.replace('static/temp/', '');
+
+    const baseUrl = import.meta.env.VITE_EXPENSE_CLAIM_FORM_URL;
+    return `${baseUrl}/blur/${folderPath}/${receipt.filename}`;
+  };
+
+  // 셀 더블클릭 핸들러
+  const handleCellDoubleClick = (rowIndex: number, field: string, currentValue: string) => {
+    setEditingCell({ rowIndex, field });
+    setEditValue(currentValue);
+  };
+
+  // 셀 편집 완료 핸들러
+  const handleCellBlur = () => {
+    if (editingCell) {
+      const { rowIndex, field } = editingCell;
+      const updatedReceipts = [...receipts];
+      updatedReceipts[rowIndex][field] = editValue;
+      setReceipts(updatedReceipts);
+
+      // 선택된 영수증도 업데이트
+      if (selectedReceipt === receipts[rowIndex]) {
+        setSelectedReceipt(updatedReceipts[rowIndex]);
+      }
+    }
+    setEditingCell(null);
+    setEditValue('');
+  };
+
+  // Enter 키 입력 시 편집 완료
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleCellBlur();
+    }
+    if (e.key === 'Escape') {
+      setEditingCell(null);
+      setEditValue('');
+    }
+  };
+
   return (
     <div className="expense-claim-page">
       <div className="expense-claim-container">
-        {/* 진행 상황 */}
-        <div className="progress-section">
-          <div className="progress-header">
-            <h2 className="progress-title">처리 진행상황</h2>
-            <button
-              className="progress-check-button"
-              onClick={handleServerCheck}
-              disabled={isCheckingServer}
-            >
-              {isCheckingServer ? '확인 중...' : 'OCR 서버 상태 확인'}
-            </button>
-            <span className="progress-counter">{currentStep} / {totalSteps} 단계</span>
-          </div>
-          <div className="progress-steps">
-            <div className="progress-track">
-              <div className="progress-track-fill" style={{ width: `${progressPercentage}%` }}></div>
-            </div>
-
-            <div className="progress-step">
-              <div className="progress-step-icon completed">
-                <Check className="w-5 h-5" />
-              </div>
-              <span className="progress-step-text">영수증 업로드</span>
-            </div>
-
-            <div className="progress-step">
-              <div className="progress-step-icon completed">
-                <Check className="w-5 h-5" />
-              </div>
-              <span className="progress-step-text">OCR 처리</span>
-            </div>
-
-            <div className="progress-step">
-              <div className="progress-step-icon current">
-                <RefreshCw className="w-5 h-5" />
-              </div>
-              <span className="progress-step-text">데이터 분류</span>
-            </div>
-
-            <div className="progress-step">
-              <div className="progress-step-icon pending">4</div>
-              <span className="progress-step-text pending">엑셀 생성</span>
-            </div>
-
-            <div className="progress-step">
-              <div className="progress-step-icon pending">5</div>
-              <span className="progress-step-text pending">다운로드</span>
-            </div>
-          </div>
-        </div>
-
         {/* 메인 컨텐츠 */}
         <div className="main-content">
           {/* 영수 상세 내용 */}
@@ -198,11 +182,96 @@ const ExpenseClaimPage = () => {
                 <tbody>
                   {receipts.length > 0 ? (
                     receipts.map((receipt, index) => (
-                      <tr key={index}>
-                        <td>{receipt.transaction_date}</td>
-                        <td>{receipt.merchant_name}</td>
-                        <td>{receipt.total_amount}원</td>
-                        <td>{receipt.card_number}</td>
+                      <tr
+                        key={index}
+                        onClick={() => handleReceiptClick(receipt)}
+                        className={selectedReceipt === receipt ? 'selected' : ''}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <td
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            handleCellDoubleClick(index, 'transaction_date', receipt.transaction_date);
+                          }}
+                        >
+                          {editingCell?.rowIndex === index && editingCell?.field === 'transaction_date' ? (
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onBlur={handleCellBlur}
+                              onKeyDown={handleKeyDown}
+                              autoFocus
+                              className="cell-input"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            receipt.transaction_date
+                          )}
+                        </td>
+                        <td
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            handleCellDoubleClick(index, 'merchant_name', receipt.merchant_name);
+                          }}
+                        >
+                          {editingCell?.rowIndex === index && editingCell?.field === 'merchant_name' ? (
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onBlur={handleCellBlur}
+                              onKeyDown={handleKeyDown}
+                              autoFocus
+                              className="cell-input"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            receipt.merchant_name
+                          )}
+                        </td>
+                        <td
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            handleCellDoubleClick(index, 'total_amount', receipt.total_amount);
+                          }}
+                        >
+                          {editingCell?.rowIndex === index && editingCell?.field === 'total_amount' ? (
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onBlur={handleCellBlur}
+                              onKeyDown={handleKeyDown}
+                              autoFocus
+                              className="cell-input"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            `${receipt.total_amount}원`
+                          )}
+                        </td>
+                        <td
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            handleCellDoubleClick(index, 'card_number', receipt.card_number);
+                          }}
+                        >
+                          {editingCell?.rowIndex === index && editingCell?.field === 'card_number' ? (
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onBlur={handleCellBlur}
+                              onKeyDown={handleKeyDown}
+                              autoFocus
+                              className="cell-input"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            receipt.card_number
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -234,31 +303,43 @@ const ExpenseClaimPage = () => {
 
           {/* 영수증 미리보기 */}
           <div className="receipt-preview">
-            <h2 className="section-title">영수증 미리보기</h2>
             <div className="upload-area">
-              <div className="upload-content">
-                <div className="upload-icon">
-                  <Upload className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="upload-text">영수증을 드래그하여 업로드하거나</p>
-                <p className="upload-text">클릭하여 파일을 선택하세요</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/pdf"
-                  multiple
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
+              {selectedReceipt ? (
+                <img
+                  src={getReceiptImageUrl(selectedReceipt) || ''}
+                  alt={selectedReceipt.merchant_name}
+                  className="receipt-image"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain'
+                  }}
                 />
-                <button
-                  className="upload-button"
-                  onClick={handleButtonClick}
-                  disabled={isUploading}
-                >
-                  {isUploading ? '업로드 중...' : '파일 선택'}
-                </button>
-                <p className="upload-hint">지원 형식: PDF (최대 10MB)</p>
-              </div>
+              ) : (
+                <div className="upload-content">
+                  <div className="upload-icon">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="upload-text">영수증을 드래그하여 업로드하거나</p>
+                  <p className="upload-text">클릭하여 파일을 선택하세요</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    className="upload-button"
+                    onClick={handleButtonClick}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? '업로드 중...' : '파일 선택'}
+                  </button>
+                  <p className="upload-hint">지원 형식: PDF (최대 10MB)</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
