@@ -167,16 +167,66 @@ const ExpenseClaimPage = () => {
     }
   };
 
-  // 날짜를 월/일 형식으로 변환
+  // 날짜를 월/일 형식으로 변환 (2자리 패딩)
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       return `${month}/${day}`;
     } catch {
       return dateString;
     }
+  };
+
+  // localStorage에서 저장된 카드번호 가져오기
+  const getSavedCardNumbers = (): string[] => {
+    const saved = localStorage.getItem('personalInfo');
+    if (saved) {
+      const data = JSON.parse(saved);
+      return data.cardNumbers || [];
+    }
+    return [];
+  };
+
+  // 카드번호 비교 함수 (숫자만 추출해서 비교)
+  const getMatchingCardNumber = (receiptCardNumber: string): string => {
+    const savedCards = getSavedCardNumbers();
+    const receiptDigits = receiptCardNumber.replace(/[^0-9]/g, ''); // 숫자만 추출
+
+    // 저장된 카드번호들과 비교
+    for (const savedCard of savedCards) {
+      const savedDigits = savedCard.replace(/[^0-9]/g, ''); // 숫자만 추출
+
+      // 최소 4자리 이상 일치하는지 확인
+      let matchCount = 0;
+      const minLength = Math.min(receiptDigits.length, savedDigits.length);
+
+      for (let i = 0; i < minLength; i++) {
+        if (receiptDigits[i] === savedDigits[i]) {
+          matchCount++;
+        }
+      }
+
+      // 4자리 이상 일치하면 저장된 카드번호 반환
+      if (matchCount >= 4) {
+        return savedCard;
+      }
+    }
+
+    // 일치하는 카드가 없으면 원래 번호 반환
+    return receiptCardNumber;
+  };
+
+  // 가맹점명에 특정 키워드가 포함되어 있는지 확인
+  const isInvalidMerchantName = (merchantName: string): boolean => {
+    const invalidKeywords = [
+      '카드명', '카드번호', '거래일자', '승인번호', '금액', '부가세', '봉사료',
+      '컵 보증금', '합계', '거래유형', '승인상태', '결제방법', '할부',
+      '가맹점명', '업종', '대표자명', '사업자번호', '전화번호', '가맹점번호', '주소'
+    ];
+
+    return invalidKeywords.some(keyword => merchantName.includes(keyword));
   };
 
   return (
@@ -245,7 +295,7 @@ const ExpenseClaimPage = () => {
                       <tr
                         key={index}
                         onClick={() => handleReceiptClick(receipt)}
-                        className={selectedReceipt === receipt ? 'selected' : ''}
+                        className={`${selectedReceipt === receipt ? 'selected' : ''} ${isInvalidMerchantName(receipt.merchant_name) ? 'invalid-merchant' : ''}`}
                         style={{ cursor: 'pointer' }}
                       >
                         <td
@@ -329,7 +379,7 @@ const ExpenseClaimPage = () => {
                               onClick={(e) => e.stopPropagation()}
                             />
                           ) : (
-                            receipt.card_number
+                            getMatchingCardNumber(receipt.card_number)
                           )}
                         </td>
                       </tr>

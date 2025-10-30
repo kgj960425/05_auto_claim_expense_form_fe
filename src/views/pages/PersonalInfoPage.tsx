@@ -1,33 +1,89 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 import './PersonalInfoPage.css'
 
+interface PersonalInfo {
+  name: string
+  position: string
+  department: string
+  cardNumbers: string[]
+}
+
 const PersonalInfoPage = () => {
-  const [cardNumbers, setCardNumbers] = useState([''])
+  // localStorage에서 초기값 불러오기
+  const loadPersonalInfo = (): PersonalInfo => {
+    const saved = localStorage.getItem('personalInfo')
+    if (saved) {
+      return JSON.parse(saved)
+    }
+    return {
+      name: '',
+      position: '',
+      department: '',
+      cardNumbers: ['']
+    }
+  }
+
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>(loadPersonalInfo())
+
+  // 컴포넌트 마운트 시 localStorage에서 데이터 불러오기
+  useEffect(() => {
+    const saved = localStorage.getItem('personalInfo')
+    if (saved) {
+      const data = JSON.parse(saved)
+      setPersonalInfo(data)
+    }
+  }, [])
 
   const addCardNumber = () => {
-    setCardNumbers([...cardNumbers, ''])
+    setPersonalInfo({
+      ...personalInfo,
+      cardNumbers: [...personalInfo.cardNumbers, '']
+    })
   }
 
   const removeCardNumber = (index: number) => {
-    if (cardNumbers.length > 1) {
-      setCardNumbers(cardNumbers.filter((_, i) => i !== index))
+    if (personalInfo.cardNumbers.length > 1) {
+      setPersonalInfo({
+        ...personalInfo,
+        cardNumbers: personalInfo.cardNumbers.filter((_, i) => i !== index)
+      })
     }
   }
 
   const updateCardNumber = (index: number, value: string) => {
-    const newCardNumbers = [...cardNumbers]
+    const newCardNumbers = [...personalInfo.cardNumbers]
     newCardNumbers[index] = value
-    setCardNumbers(newCardNumbers)
+    setPersonalInfo({
+      ...personalInfo,
+      cardNumbers: newCardNumbers
+    })
+  }
+
+  const handleInputChange = (field: keyof PersonalInfo, value: string) => {
+    setPersonalInfo({
+      ...personalInfo,
+      [field]: value
+    })
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // localStorage에 저장
+    localStorage.setItem('personalInfo', JSON.stringify(personalInfo))
+    alert('개인정보가 저장되었습니다!')
   }
 
   return (
     <div className="personal-info-page">
       <div className="personal-info-container">
         <div className="personal-info-card">
-          <h1 className="page-title">개인정보 입력</h1>
+          <div className="page-header">
+            <h1 className="page-title">개인정보 입력</h1>
+            <span className="storage-notice">* 저장한 정보는 브라우저에 저장됩니다.</span>
+          </div>
 
-          <form className="info-form">
+          <form className="info-form" onSubmit={handleSubmit}>
             {/* 기본 정보 */}
             <div className="form-section">
               <table className="info-table">
@@ -40,6 +96,8 @@ const PersonalInfoPage = () => {
                         type="text"
                         className="form-input"
                         placeholder="홍길동"
+                        value={personalInfo.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
                       />
                     </td>
                   </tr>
@@ -50,6 +108,8 @@ const PersonalInfoPage = () => {
                         type="text"
                         className="form-input"
                         placeholder="대리"
+                        value={personalInfo.position}
+                        onChange={(e) => handleInputChange('position', e.target.value)}
                       />
                     </td>
                   </tr>
@@ -60,6 +120,8 @@ const PersonalInfoPage = () => {
                         type="text"
                         className="form-input"
                         placeholder="개발팀"
+                        value={personalInfo.department}
+                        onChange={(e) => handleInputChange('department', e.target.value)}
                       />
                     </td>
                   </tr>
@@ -71,7 +133,7 @@ const PersonalInfoPage = () => {
             <div className="form-section">
               <h2 className="section-title">카드 번호</h2>
               <div className="card-numbers-container">
-                {cardNumbers.map((cardNumber, index) => (
+                {personalInfo.cardNumbers.map((cardNumber, index) => (
                   <div key={index} className="card-number-item">
                     <input
                       type="text"
@@ -80,7 +142,7 @@ const PersonalInfoPage = () => {
                       value={cardNumber}
                       onChange={(e) => updateCardNumber(index, e.target.value)}
                     />
-                    {cardNumbers.length > 1 && (
+                    {personalInfo.cardNumbers.length > 1 && (
                       <button
                         type="button"
                         className="remove-card-button"
