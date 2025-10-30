@@ -3,6 +3,10 @@ import { NavLink } from 'react-router-dom'
 import './NavigationLayout.css'
 
 const NavigationLayout = () => {
+    const handleLoginClick = () => {
+        alert('로그인 기능 개발 예정입니다.')
+    }
+
     return (
         <header className="navigation-header">
                 <div className="navigation-container">
@@ -32,6 +36,11 @@ const NavigationLayout = () => {
                       공지사항
                     </NavLink>
                   </nav>
+                  <div className="navigation-login">
+                    <button className="navigation-login-button" onClick={handleLoginClick}>
+                      로그인
+                    </button>
+                  </div>
                 </div>
               </header>
     )

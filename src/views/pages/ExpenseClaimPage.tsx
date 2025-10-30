@@ -79,10 +79,16 @@ const ExpenseClaimPage = () => {
 
       // 영수증 데이터 저장
       if (data.receipts && Array.isArray(data.receipts)) {
-        setReceipts(data.receipts);
+        // 날짜 기준 오름차순 정렬
+        const sortedReceipts = [...data.receipts].sort((a, b) => {
+          const dateA = new Date(a.transaction_date);
+          const dateB = new Date(b.transaction_date);
+          return dateA.getTime() - dateB.getTime();
+        });
+        setReceipts(sortedReceipts);
         // 첫 번째 영수증을 기본으로 선택
-        if (data.receipts.length > 0) {
-          setSelectedReceipt(data.receipts[0]);
+        if (sortedReceipts.length > 0) {
+          setSelectedReceipt(sortedReceipts[0]);
         }
       }
 
@@ -161,11 +167,65 @@ const ExpenseClaimPage = () => {
     }
   };
 
+  // 날짜를 월/일 형식으로 변환
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}/${day}`;
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="expense-claim-page">
       <div className="expense-claim-container">
         {/* 메인 컨텐츠 */}
         <div className="main-content">
+          {/* 영수증 미리보기 */}
+          <div className="receipt-preview">
+            <div className="upload-area">
+              {selectedReceipt ? (
+                <img
+                  src={getReceiptImageUrl(selectedReceipt) || ''}
+                  alt={selectedReceipt.merchant_name}
+                  className="receipt-image"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
+              ) : (
+                <div className="upload-content">
+                  <div className="upload-icon">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="upload-text">영수증을 드래그하여 업로드하거나</p>
+                  <p className="upload-text">클릭하여 파일을 선택하세요</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    className="upload-button"
+                    onClick={handleButtonClick}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? '업로드 중...' : '파일 선택'}
+                  </button>
+                  <p className="upload-hint">지원 형식: PDF (최대 10MB)</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* 영수 상세 내용 */}
           <div className="receipt-details">
             <h2 className="section-title">영수 상세 내용</h2>
@@ -206,7 +266,7 @@ const ExpenseClaimPage = () => {
                               onClick={(e) => e.stopPropagation()}
                             />
                           ) : (
-                            receipt.transaction_date
+                            formatDate(receipt.transaction_date)
                           )}
                         </td>
                         <td
@@ -299,115 +359,17 @@ const ExpenseClaimPage = () => {
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* 영수증 미리보기 */}
-          <div className="receipt-preview">
-            <div className="upload-area">
-              {selectedReceipt ? (
-                <img
-                  src={getReceiptImageUrl(selectedReceipt) || ''}
-                  alt={selectedReceipt.merchant_name}
-                  className="receipt-image"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
-              ) : (
-                <div className="upload-content">
-                  <div className="upload-icon">
-                    <Upload className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <p className="upload-text">영수증을 드래그하여 업로드하거나</p>
-                  <p className="upload-text">클릭하여 파일을 선택하세요</p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    multiple
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    className="upload-button"
-                    onClick={handleButtonClick}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? '업로드 중...' : '파일 선택'}
-                  </button>
-                  <p className="upload-hint">지원 형식: PDF (최대 10MB)</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 하단 3개 카드 */}
-        <div className="bottom-cards">
-          {/* 엑셀 Import */}
-          <div className="card">
-            <div className="card-content">
-              <div className="card-icon green">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-                </svg>
-              </div>
-              <h3 className="card-title">엑셀 Import</h3>
-              <p className="card-description">시리얼 데이터를 엑셀 파일로 내보내기</p>
-              <button className="card-button green">
+            <div className="action-buttons">
+              <button className="action-button green">
                 엑셀 다운로드
               </button>
-            </div>
-          </div>
-
-          {/* PDF 병합 */}
-          <div className="card">
-            <div className="card-content">
-              <div className="card-icon red">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-                </svg>
-              </div>
-              <h3 className="card-title">PDF 병합</h3>
-              <p className="card-description">모든 영수증을 하나의 PDF로 병합</p>
-              <button className="card-button red">
+              <button className="action-button red">
                 PDF 다운로드
               </button>
             </div>
           </div>
-
-          {/* 요약 통계 */}
-          <div className="card">
-            <div className="card-content">
-              <div className="card-icon blue">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3z" />
-                </svg>
-              </div>
-              <h3 className="card-title">요약 통계</h3>
-              <div className="stats-list">
-                <div className="stats-item">
-                  <span className="stats-label">교통비:</span>
-                  <span className="stats-value">15,000원</span>
-                </div>
-                <div className="stats-item">
-                  <span className="stats-label">식비:</span>
-                  <span className="stats-value">12,000원</span>
-                </div>
-                <div className="stats-item">
-                  <span className="stats-label">사무비:</span>
-                  <span className="stats-value">25,000원</span>
-                </div>
-                <div className="stats-total">
-                  <span className="stats-total-label">총합:</span>
-                  <span className="stats-total-value">52,000원</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+
       </div>
     </div>
   )
