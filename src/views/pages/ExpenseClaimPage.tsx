@@ -39,6 +39,7 @@ const ExpenseClaimPage = () => {
     }
 
     if (validFiles.length > 0) {
+      console.log(selectedFiles);
       setSelectedFiles(validFiles);
       handleFileUpload(validFiles);
     }
